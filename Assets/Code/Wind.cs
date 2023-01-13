@@ -60,6 +60,14 @@ public class Wind : MonoBehaviour
             if (isWithSound && isWorking && alphaRatio > 0.5f && !isPlayingSound)
             {
                 isPlayingSound = true;
+                if (DeerUnity.VolumeRatio == 0)
+                {
+                    audio.volume = 0;
+                }
+                else
+                {
+                    audio.volume = 1;
+                }
                 audio.PlayOneShot(windSound);
             }
         }

@@ -24,6 +24,10 @@ public class PlatformChecker : MonoBehaviour
                 deerUnity.GetComponent<DeerUnity>().isOnMovePlatform = true;
             }
         }
+        else if(collision.tag == "MaterialisedPlatform")
+        {
+            deerUnity.GetComponent<DeerUnity>().isOnPlatform = true;
+        }
         else if (collision.tag == "MoveObject")
         {
             deerUnity.GetComponent<DeerUnity>().isOnPlatform = true;
@@ -51,11 +55,16 @@ public class PlatformChecker : MonoBehaviour
         }
         else if (collision.tag == "GhostPlatform")
         {
+            deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().GetComponent<ReindeerGhost>().currendGhostPlatform = collision.gameObject;
             deerUnity.GetComponent<DeerUnity>().isOnPlatform = true;
         }
         else if (collision.tag == "Circle")
         {
             deerUnity.GetComponent<DeerUnity>().TakeDamage(100f);
+        }
+        if (collision.tag == "CollectionArea")
+        {
+            deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().GetComponent<ReindeerSmall>().currentLemmingArea = collision.gameObject;
         }
         
     }
@@ -78,11 +87,13 @@ public class PlatformChecker : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.tag == "Platform" || collision.tag == "GhostPlatform" || collision.tag == "MoveObject" || collision.tag == "CircleGhostPlatform")
+        if (collision.tag == "Platform" || collision.tag == "GhostPlatform" || collision.tag == "MoveObject" || collision.tag == "CircleGhostPlatform" || collision.tag == "MaterialisedPlatform")
         {
             deerUnity.GetComponent<DeerUnity>().isOnPlatform = false;
             deerUnity.GetComponent<DeerUnity>().isOnMovePlatform = false;
+            deerUnity.GetComponent<DeerUnity>().isOnGhostPlatform = false;
             deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().transform.parent = null;
+            //deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().GetComponent<ReindeerGhost>().currendGhostPlatform = null;
         }
         else if(collision.tag == "CollapsingPlat")
         {

@@ -29,6 +29,9 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
     private List<GameObject> allAnotherPlatforms = new List<GameObject>();
     public int lungeImpulse;
     public static bool isLunge;
+    private GameObject trapTriggerLeft;
+    private GameObject trapTriggerRight;
+    public GameObject CurrentActiveTrapTrigger;
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -44,6 +47,10 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
         allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("Platform"));
         lungeImpulse = 1000;
         isLunge = false;
+
+        trapTriggerLeft = transform.Find("TrapTriggerLeft").gameObject;
+        trapTriggerRight = transform.Find("TrapTriggerRight").gameObject;
+        CurrentActiveTrapTrigger = trapTriggerLeft;
     }
 
     void FixedUpdate()
@@ -256,10 +263,12 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
         if (direction < 0 && !spriteRenderer.flipX)
         {
             spriteRenderer.flipX = true;
+            CurrentActiveTrapTrigger = trapTriggerRight;
         }
         if (direction > 0 && spriteRenderer.flipX)
         {
             spriteRenderer.flipX = false;
+            CurrentActiveTrapTrigger = trapTriggerLeft;
         }
     }
 

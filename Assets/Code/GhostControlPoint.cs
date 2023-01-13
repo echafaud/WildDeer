@@ -76,6 +76,8 @@ public class GhostControlPoint : MonoBehaviour
                 GameObject.Find("DeerUnity").GetComponent<DeerUnity>().GetCurrentActiveDeer().GetComponent<ReindeerSmall>().StopMoving();
                 isActivateCameraTiedBefore = true;
                 TurnOnCameraTiedGhost();
+                GameObject.Find("FirstGroupHints").SetActive(false);
+                GameObject.Find("MovingPlatforms").SetActive(false);  
             }
         }
     }

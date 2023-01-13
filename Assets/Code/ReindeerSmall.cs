@@ -36,6 +36,10 @@ public class ReindeerSmall : MonoBehaviour
     private float shadowDelay;
     private GameObject rightWallChecker;
     private GameObject leftWallChecker;
+    private GameObject trapTriggerLeft;
+    private GameObject trapTriggerRight;
+    public GameObject CurrentActiveTrapTrigger;
+    public GameObject currentLemmingArea;
     //public bool isNeedToUpdatePlatformsList = false;
     public bool isInShadow { get; private set; }
 
@@ -61,7 +65,11 @@ public class ReindeerSmall : MonoBehaviour
 
         rightWallChecker = transform.Find("RightWallChecker").gameObject;
         leftWallChecker = transform.Find("LeftWallChecker").gameObject;
-    }
+
+        trapTriggerLeft = transform.Find("TrapTriggerLeft").gameObject;
+        trapTriggerRight = transform.Find("TrapTriggerRight").gameObject;
+        CurrentActiveTrapTrigger = trapTriggerLeft;
+}
 
     void FixedUpdate()
     {
@@ -87,10 +95,12 @@ public class ReindeerSmall : MonoBehaviour
         if (direction < 0 && !spriteRenderer.flipX)
         {
             spriteRenderer.flipX = true;
+            CurrentActiveTrapTrigger = trapTriggerRight;
         }
         if (direction > 0 && spriteRenderer.flipX)
         {
             spriteRenderer.flipX = false;
+            CurrentActiveTrapTrigger = trapTriggerLeft;
         }
     }
 
@@ -226,7 +236,11 @@ public class ReindeerSmall : MonoBehaviour
         {
             isSmell = true;
             TurnOnScent(); // функция для нюха, пока тут только затемнение экрана на некоторое время
-            Invoke("TurnOffScent", 3f); // функция вызывающая другую функцию, через заданный промежуток времени
+            //Invoke("TurnOffScent", 3f); // функция вызывающая другую функцию, через заданный промежуток времени
+        }
+        if (Input.GetKeyUp(KeyCode.LeftAlt))
+        {
+            TurnOffScent();
         }
         if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0)
         {
@@ -237,6 +251,10 @@ public class ReindeerSmall : MonoBehaviour
         {
             shiftRatio = 1;
             isRunning = false;
+        }
+        if (Input.GetKeyDown(KeyCode.E) && currentLemmingArea != null)//если нажали влево, прибавить горизонтальную скорость влево
+        {
+            currentLemmingArea.GetComponent<CollectionLemming>().assembleLemming();
         }
         var previousDirection = direction;
         if (CurrentHorizontalVelocity > 0)

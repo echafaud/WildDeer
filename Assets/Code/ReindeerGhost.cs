@@ -24,6 +24,7 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
     private bool isStacked = false;
     private int previousDirection = 1;
     private List<GameObject> allAnotherPlatforms = new List<GameObject>();
+    public GameObject currendGhostPlatform;
 
     //public bool isGrounded = true;
     void Start()
@@ -94,12 +95,12 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
         {
             rigidbody.AddForce(new Vector2(0, 45));
         }
-        if (Input.GetKeyDown(KeyCode.LeftAlt) && !DeerUnity.IsGrounded && rigidbody.velocity.y < 0)//если нажали пробел и олень по вертикали не движется, "пнуть" его вверх
+        if (Input.GetKeyDown(KeyCode.LeftAlt) && !DeerUnity.IsGrounded && rigidbody.velocity.y <= 0)
         {
             rigidbody.gravityScale = 0.1f;
             rigidbody.velocity = new Vector2(rigidbody.velocity.x, -1);
         }
-        if (Input.GetKeyUp(KeyCode.Space))//если нажали пробел и олень по вертикали не движется, "пнуть" его вверх
+        if (Input.GetKeyUp(KeyCode.LeftAlt))//если нажали пробел и олень по вертикали не движется, "пнуть" его вверх
         {
             rigidbody.gravityScale = 1f;
         }
@@ -118,6 +119,10 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
         {
             CurrentHorizontalVelocity += -4;
             //horizontalForceRatio = 0;
+        }
+        if (Input.GetKeyDown(KeyCode.E) && currendGhostPlatform != null)//если нажали влево, прибавить горизонтальную скорость влево
+        {
+            currendGhostPlatform.GetComponent<Materialization>().makeMaterialisation();
         }
         if (Input.GetKeyUp(KeyCode.A))//если отпустили влево, прибавить горизонтальную скорость вправо
         {

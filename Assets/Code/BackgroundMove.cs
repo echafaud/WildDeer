@@ -18,6 +18,6 @@ public class BackgroundMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.position = new Vector3(deerUnity.transform.position.x - xDelta, deerUnity.transform.position.y - yDelta, transform.position.z);
+        //transform.position = new Vector3(deerUnity.transform.position.x - xDelta, deerUnity.transform.position.y - yDelta, transform.position.z);
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 public class HunterEnableArea : MonoBehaviour
 {
     private List<GameObject> hunterPoints = new List<GameObject>();
+    private bool isAlreadyMoved = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,9 +21,10 @@ public class HunterEnableArea : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag.Equals("Player"))
+        if (collision.tag.Equals("Player") && !isAlreadyMoved)
         {
-            MoveHunterAtNearestPoint();   
+            MoveHunterAtNearestPoint();
+            isAlreadyMoved = true;
         }
     }
 

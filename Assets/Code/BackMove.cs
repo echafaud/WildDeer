@@ -23,7 +23,7 @@ public class BackMove : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        transform.position += new Vector3((xStart - deerUnity.transform.position.x) / movingRatio, (deerUnity.transform.position.y - yStart), 0);
+        transform.position += new Vector3((xStart - deerUnity.transform.position.x) / movingRatio, 0, 0);
 
         //transform.position = new Vector3(0, deerUnity.transform.position.y - yDelta, 0);
         xStart = deerUnity.transform.position.x;

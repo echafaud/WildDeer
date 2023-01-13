@@ -16,6 +16,9 @@ TagManager:
   - moveCamera
   - Circle
   - CircleGhostPlatform
+  - Hints
+  - MaterialisedPlatform
+  - CollectionArea
   layers:
   - Default
   - TransparentFX

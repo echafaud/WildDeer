@@ -19,6 +19,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     public GameObject spawn;
     private bool isCanSwitch = true;
     public bool isOnPlatform = false;
+    public bool isOnGhostPlatform = false;
     public bool isOnMovePlatform = false;
     public GameObject ghostCheckpoint;
     public static bool isCameraTiedGhost;
@@ -27,9 +28,14 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     public bool isSecondDeerAvailable;
     public bool isThirdDeerAvailable;
 
+    public static float VolumeRatio = 0.5f;
+
     public bool isBushed { get; private set; } = false;
     public static int CurrentActive { get; private set; }
     public static bool IsGrounded { get; private set; } = true;
+
+    public AudioClip mainTheme;
+    public AudioClip hunterTheme;
 
     private bool isDamage;
 
@@ -53,9 +59,28 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     public bool isActivateCooling;
 
     public int countOfFoundTracks;
+    public static int countOfFoundLemmings;
 
     public GameObject inGameMenu;
     private float maxFallVelocity = 0;
+
+    public GameObject firstAbility;
+    public GameObject secondAbility;
+
+    public Sprite smallFirstAbil;
+    public Sprite smallFirstAbilActive;
+    public Sprite smallSecondAbil;
+    public Sprite smallSecondAbilActive;
+
+    public Sprite ghostFirstAbil;
+    public Sprite ghostFirstAbilActive;
+    public Sprite ghostSecondAbil;
+    public Sprite ghostSecondAbilActive;
+
+    public Sprite bigFirstAbil;
+    public Sprite bigFirstAbilActive;
+    public Sprite bigSecondAbil;
+    public Sprite bigSecondAbilActive;
 
     // Start is called before the first frame update
     void Start()
@@ -88,9 +113,10 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         currentCooling = maxCooling;
         isDamage = true;
         countOfFoundTracks = 0;
-        isFirstDeerAvailable = true;
-        isSecondDeerAvailable = true;
-        isThirdDeerAvailable = true;
+        countOfFoundLemmings = 0;
+        //isFirstDeerAvailable = true;
+        //isSecondDeerAvailable = true;
+        //isThirdDeerAvailable = true;
 
         //isActivateCooling = true;
         ActivateCooling();
@@ -132,6 +158,106 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
                 inGameMenu.SetActive(true);
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            OnE();
+        }
+        if (Input.GetKeyDown(KeyCode.LeftAlt))
+        {
+            OnAlt();
+        }
+        if (Input.GetKeyUp(KeyCode.E))
+        {
+            OffE();
+        }
+        if (Input.GetKeyUp(KeyCode.LeftAlt))
+        {
+            OffAlt();
+        }
+    }
+
+    private void OffAlt()
+    {
+        if (CurrentActive == 1)
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = smallSecondAbil;
+        }
+        else if (CurrentActive == 2)
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = ghostSecondAbil;
+        }
+        else
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = bigSecondAbil;
+        }
+    }
+
+    private void OffE()
+    {
+        if (CurrentActive == 1)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = smallFirstAbil;
+        }
+        else if (CurrentActive == 2)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = ghostFirstAbil;
+        }
+        else
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = bigFirstAbil;
+        }
+    }
+
+    private void OnAlt()
+    {
+        if (CurrentActive == 1)
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = smallSecondAbilActive;
+        }
+        else if (CurrentActive == 2)
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = ghostSecondAbilActive;
+        }
+        else
+        {
+            secondAbility.GetComponent<SpriteRenderer>().sprite = bigSecondAbilActive;
+        }
+    }
+
+    private void OnE()
+    {
+        if (CurrentActive == 1)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = smallFirstAbilActive;
+        }
+        else if (CurrentActive == 2)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = ghostFirstAbilActive;
+        }
+        else
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = bigFirstAbilActive;
+        }
+    }
+
+    private void SetAbilIcons()
+    {
+        if (CurrentActive == 1)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = smallFirstAbil;
+            secondAbility.GetComponent<SpriteRenderer>().sprite = smallSecondAbil;
+        }
+        else if (CurrentActive == 2)
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = ghostFirstAbil;
+            secondAbility.GetComponent<SpriteRenderer>().sprite = ghostSecondAbil;
+        }
+        else
+        {
+            firstAbility.GetComponent<SpriteRenderer>().sprite = bigFirstAbil;
+            secondAbility.GetComponent<SpriteRenderer>().sprite = bigSecondAbil;
+        }
     }
 
     private void StaminaChecked()
@@ -164,6 +290,13 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
                 currentHealth = maxHealth;
             }
         }
+    }
+
+    public GameObject GetCurrentActiveTrapTrigger()
+    {
+        if (CurrentActive == 1)
+            return reindeerSmall.GetComponent<ReindeerSmall>().CurrentActiveTrapTrigger;
+        return reindeerBig.GetComponent<ReindeerBig>().CurrentActiveTrapTrigger;
     }
 
     public void ActivateCooling()
@@ -211,6 +344,11 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
 
     public void Respawn()
     {
+        var allHunterControlPoints = GameObject.FindGameObjectsWithTag("HunterPoint");
+        foreach(var point in allHunterControlPoints)
+        {
+            point.GetComponent<HunterControlPoint>().isAlreadyWorked = false;
+        }
         MoveAllDeersToSpawn();
         if (CurrentActive == 1)
         {
@@ -231,6 +369,9 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         {
             GameObject.Find("EnabledHunterMap1").GetComponent<HunterEnableArea>().MoveHunterAtNearestPoint();
         }
+        SwitchOnFirst();
+        GetCurrentActiveDeer().GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+        maxFallVelocity = 0;
     }
 
     private void StaminaKeys()
@@ -275,158 +416,178 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     {
         if (isFirstDeerAvailable && Input.GetKeyDown(KeyCode.Alpha1) && CurrentActive != 1 && isCanSwitch)//в зависимости от того, на какую цифру нажали, активируютс€ и дизактивируютс€ нужные олени
         {
-            if (isOnMovePlatform)
-            {
-                var collisionTransform = GetCurrentActiveDeer().transform.parent;
-                GetCurrentActiveDeer().transform.parent = null;
-                reindeerGhost.SetActive(false);
-                reindeerBig.SetActive(false);
-                reindeerSmall.SetActive(true);
-
-                currentActiveDeer = reindeerSmall;
-                GetCurrentActiveDeer().transform.parent = collisionTransform;
-            }
-            else
-            {
-                reindeerGhost.SetActive(false);
-                reindeerBig.SetActive(false);
-                reindeerSmall.SetActive(true);
-                currentActiveDeer = reindeerSmall;
-            }
-           
-            reindeerSmall.transform.position = new Vector3(transform.position.x, transform.position.y - unitySmallDeltaY);
-
-            var previousHorizontalVelocity = 0f;
-            var previousVerticalVelocity = 0f;
-            var previousIsRunning = false;
-            var previousHorizontalForceRatio = 0f;
-            var previousDirection = 0;
-            if (CurrentActive == 2)
-            {
-                previousHorizontalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerGhost.GetComponent<ReindeerGhost>().isRunning;
-                previousHorizontalForceRatio = reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio;
-                previousDirection = reindeerGhost.GetComponent<ReindeerGhost>().direction;
-            }
-            else if (CurrentActive == 3)
-            {
-                previousHorizontalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerBig.GetComponent<ReindeerBig>().isRunning;
-                previousHorizontalForceRatio = reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio;
-                previousDirection = reindeerBig.GetComponent<ReindeerBig>().direction;
-            }
-            reindeerSmall.GetComponent<ReindeerSmall>().SetHorizontalVelocity(previousHorizontalVelocity);
-            reindeerSmall.GetComponent<ReindeerSmall>().isRunning = previousIsRunning;
-            reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio = previousHorizontalForceRatio;
-            reindeerSmall.GetComponent<ReindeerSmall>().direction = previousDirection;
-            reindeerSmall.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
-
-            CurrentActive = 1;
+            SwitchOnFirst();
         }
         if (isSecondDeerAvailable && Input.GetKeyDown(KeyCode.Alpha2) && CurrentActive != 2 && isCanSwitch)
         {
-            if (isOnMovePlatform)
-            {
-                var collisionTransform = GetCurrentActiveDeer().transform.parent;
-                GetCurrentActiveDeer().transform.parent = null;
-                reindeerSmall.SetActive(false);
-                reindeerBig.SetActive(false);
-                reindeerGhost.SetActive(true);
-                currentActiveDeer = reindeerGhost;
-                GetCurrentActiveDeer().transform.parent = collisionTransform;
-            }
-            else
-            {
-                reindeerSmall.SetActive(false);
-                reindeerBig.SetActive(false);
-                reindeerGhost.SetActive(true);
-                currentActiveDeer = reindeerGhost;
-            }
-            reindeerGhost.transform.position = new Vector3(transform.position.x, transform.position.y - unityGhostDeltaY);
-
-            var previousHorizontalVelocity = 0f;
-            var previousVerticalVelocity = 0f;
-            var previousIsRunning = false;
-            var previousHorizontalForceRatio = 0f;
-            var previousDirection = 0;
-            if (CurrentActive == 1)
-            {
-                previousHorizontalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerSmall.GetComponent<ReindeerSmall>().isRunning;
-                previousHorizontalForceRatio = reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio;
-                previousDirection = reindeerSmall.GetComponent<ReindeerSmall>().direction;
-            }
-            else if (CurrentActive == 3)
-            {
-                previousHorizontalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerBig.GetComponent<ReindeerBig>().isRunning;
-                previousHorizontalForceRatio = reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio;
-                previousDirection = reindeerBig.GetComponent<ReindeerBig>().direction;
-            }
-            reindeerGhost.GetComponent<ReindeerGhost>().SetHorizontalVelocity(previousHorizontalVelocity);
-            reindeerGhost.GetComponent<ReindeerGhost>().isRunning = previousIsRunning;
-            reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio = previousHorizontalForceRatio;
-            reindeerGhost.GetComponent<ReindeerGhost>().direction = previousDirection;
-            reindeerGhost.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
-
-            CurrentActive = 2;
+            SwitchOnSecond();
         }
         if (isThirdDeerAvailable && Input.GetKeyDown(KeyCode.Alpha3) && CurrentActive != 3 && isCanSwitch)
         {
-            if (isOnMovePlatform)
-            {
-                var collisionTransform = GetCurrentActiveDeer().transform.parent;
-                GetCurrentActiveDeer().transform.parent = null;
-                reindeerGhost.SetActive(false);
-                reindeerSmall.SetActive(false);
-                reindeerBig.SetActive(true);
-                currentActiveDeer = reindeerBig;
-                GetCurrentActiveDeer().transform.parent = collisionTransform;
-            }
-            else
-            {
-                reindeerGhost.SetActive(false);
-                reindeerSmall.SetActive(false);
-                reindeerBig.SetActive(true);
-                currentActiveDeer = reindeerBig;
-            }
-            reindeerBig.transform.position = new Vector3(transform.position.x, transform.position.y - unityBigDeltaY);
-
-            var previousHorizontalVelocity = 0f;
-            var previousVerticalVelocity = 0f;
-            var previousIsRunning = false;
-            var previousHorizontalForceRatio = 0f;
-            var previousDirection = 0;
-            if (CurrentActive == 1)
-            {
-                previousHorizontalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerSmall.GetComponent<ReindeerSmall>().isRunning;
-                previousHorizontalForceRatio = reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio;
-                previousDirection = reindeerSmall.GetComponent<ReindeerSmall>().direction;
-            }
-            else if (CurrentActive == 2)
-            {
-                previousHorizontalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentHorizontalVelocity;
-                previousVerticalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentVerticalVelocity;
-                previousIsRunning = reindeerGhost.GetComponent<ReindeerGhost>().isRunning;
-                previousHorizontalForceRatio = reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio;
-                previousDirection = reindeerGhost.GetComponent<ReindeerGhost>().direction;
-            }
-            reindeerBig.GetComponent<ReindeerBig>().SetHorizontalVelocity(previousHorizontalVelocity);
-            reindeerBig.GetComponent<ReindeerBig>().isRunning = previousIsRunning;
-            reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio = previousHorizontalForceRatio;
-            reindeerBig.GetComponent<ReindeerBig>().direction = previousDirection;
-            reindeerBig.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
-
-            CurrentActive = 3;
+            SwitchOnThird();
         }
     }
 
+    public void SwitchOnFirst()
+    {
+        
+        if (isOnMovePlatform)
+        {
+            var collisionTransform = GetCurrentActiveDeer().transform.parent;
+            GetCurrentActiveDeer().transform.parent = null;
+            reindeerGhost.SetActive(false);
+            reindeerBig.SetActive(false);
+            reindeerSmall.SetActive(true);
+
+            currentActiveDeer = reindeerSmall;
+            GetCurrentActiveDeer().transform.parent = collisionTransform;
+        }
+        else
+        {
+            reindeerGhost.SetActive(false);
+            reindeerBig.SetActive(false);
+            reindeerSmall.SetActive(true);
+            currentActiveDeer = reindeerSmall;
+        }
+
+        reindeerSmall.transform.position = new Vector3(transform.position.x, transform.position.y - unitySmallDeltaY);
+
+        var previousHorizontalVelocity = 0f;
+        var previousVerticalVelocity = 0f;
+        var previousIsRunning = false;
+        var previousHorizontalForceRatio = 0f;
+        var previousDirection = 0;
+        if (CurrentActive == 2)
+        {
+            previousHorizontalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerGhost.GetComponent<ReindeerGhost>().isRunning;
+            previousHorizontalForceRatio = reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio;
+            previousDirection = reindeerGhost.GetComponent<ReindeerGhost>().direction;
+        }
+        else if (CurrentActive == 3)
+        {
+            previousHorizontalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerBig.GetComponent<ReindeerBig>().isRunning;
+            previousHorizontalForceRatio = reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio;
+            previousDirection = reindeerBig.GetComponent<ReindeerBig>().direction;
+        }
+        reindeerSmall.GetComponent<ReindeerSmall>().SetHorizontalVelocity(previousHorizontalVelocity);
+        reindeerSmall.GetComponent<ReindeerSmall>().isRunning = previousIsRunning;
+        reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio = previousHorizontalForceRatio;
+        reindeerSmall.GetComponent<ReindeerSmall>().direction = previousDirection;
+        reindeerSmall.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
+
+        CurrentActive = 1;
+        SetAbilIcons();
+    }
+
+    public void SwitchOnSecond()
+    {
+        
+        if (isOnMovePlatform)
+        {
+            var collisionTransform = GetCurrentActiveDeer().transform.parent;
+            GetCurrentActiveDeer().transform.parent = null;
+            reindeerSmall.SetActive(false);
+            reindeerBig.SetActive(false);
+            reindeerGhost.SetActive(true);
+            currentActiveDeer = reindeerGhost;
+            GetCurrentActiveDeer().transform.parent = collisionTransform;
+        }
+        else
+        {
+            reindeerSmall.SetActive(false);
+            reindeerBig.SetActive(false);
+            reindeerGhost.SetActive(true);
+            currentActiveDeer = reindeerGhost;
+        }
+        reindeerGhost.transform.position = new Vector3(transform.position.x, transform.position.y - unityGhostDeltaY);
+
+        var previousHorizontalVelocity = 0f;
+        var previousVerticalVelocity = 0f;
+        var previousIsRunning = false;
+        var previousHorizontalForceRatio = 0f;
+        var previousDirection = 0;
+        if (CurrentActive == 1)
+        {
+            previousHorizontalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerSmall.GetComponent<ReindeerSmall>().isRunning;
+            previousHorizontalForceRatio = reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio;
+            previousDirection = reindeerSmall.GetComponent<ReindeerSmall>().direction;
+        }
+        else if (CurrentActive == 3)
+        {
+            previousHorizontalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerBig.GetComponent<ReindeerBig>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerBig.GetComponent<ReindeerBig>().isRunning;
+            previousHorizontalForceRatio = reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio;
+            previousDirection = reindeerBig.GetComponent<ReindeerBig>().direction;
+        }
+        reindeerGhost.GetComponent<ReindeerGhost>().SetHorizontalVelocity(previousHorizontalVelocity);
+        reindeerGhost.GetComponent<ReindeerGhost>().isRunning = previousIsRunning;
+        reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio = previousHorizontalForceRatio;
+        reindeerGhost.GetComponent<ReindeerGhost>().direction = previousDirection;
+        reindeerGhost.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
+
+        CurrentActive = 2;
+        SetAbilIcons();
+    }
+
+    public void SwitchOnThird()
+    {
+        
+        if (isOnMovePlatform)
+        {
+            var collisionTransform = GetCurrentActiveDeer().transform.parent;
+            GetCurrentActiveDeer().transform.parent = null;
+            reindeerGhost.SetActive(false);
+            reindeerSmall.SetActive(false);
+            reindeerBig.SetActive(true);
+            currentActiveDeer = reindeerBig;
+            GetCurrentActiveDeer().transform.parent = collisionTransform;
+        }
+        else
+        {
+            reindeerGhost.SetActive(false);
+            reindeerSmall.SetActive(false);
+            reindeerBig.SetActive(true);
+            currentActiveDeer = reindeerBig;
+        }
+        reindeerBig.transform.position = new Vector3(transform.position.x, transform.position.y - unityBigDeltaY);
+
+        var previousHorizontalVelocity = 0f;
+        var previousVerticalVelocity = 0f;
+        var previousIsRunning = false;
+        var previousHorizontalForceRatio = 0f;
+        var previousDirection = 0;
+        if (CurrentActive == 1)
+        {
+            previousHorizontalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerSmall.GetComponent<ReindeerSmall>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerSmall.GetComponent<ReindeerSmall>().isRunning;
+            previousHorizontalForceRatio = reindeerSmall.GetComponent<ReindeerSmall>().horizontalForceRatio;
+            previousDirection = reindeerSmall.GetComponent<ReindeerSmall>().direction;
+        }
+        else if (CurrentActive == 2)
+        {
+            previousHorizontalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentHorizontalVelocity;
+            previousVerticalVelocity = reindeerGhost.GetComponent<ReindeerGhost>().CurrentVerticalVelocity;
+            previousIsRunning = reindeerGhost.GetComponent<ReindeerGhost>().isRunning;
+            previousHorizontalForceRatio = reindeerGhost.GetComponent<ReindeerGhost>().horizontalForceRatio;
+            previousDirection = reindeerGhost.GetComponent<ReindeerGhost>().direction;
+        }
+        reindeerBig.GetComponent<ReindeerBig>().SetHorizontalVelocity(previousHorizontalVelocity);
+        reindeerBig.GetComponent<ReindeerBig>().isRunning = previousIsRunning;
+        reindeerBig.GetComponent<ReindeerBig>().horizontalForceRatio = previousHorizontalForceRatio;
+        reindeerBig.GetComponent<ReindeerBig>().direction = previousDirection;
+        reindeerBig.GetComponent<Rigidbody2D>().velocity = new Vector2(previousHorizontalVelocity, previousVerticalVelocity);
+
+        CurrentActive = 3;
+        SetAbilIcons();
+    }
 
     private void UpdateIsOnGround()
     {
@@ -448,8 +609,6 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         }
         if (nextIsGrounded && !IsGrounded)
         {
-            
-
             if (maxFallVelocity > 15)
             {
                 TakeDamage((int)((maxFallVelocity - 15) * 100 / 15));
@@ -464,7 +623,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
 
     public void Trapped()
     {
-        TakeDamage(25);
+        
         switch (CurrentActive)
         {
             case 1:
@@ -477,6 +636,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
                 reindeerBig.GetComponent<ReindeerBig>().Trapped();
                 break;
         }
+        TakeDamage(25);
     }
 
     public void Bushed(GameObject bush)
@@ -506,6 +666,8 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         reindeerGhost.transform.position = new Vector3(spawn.transform.position.x, spawn.transform.position.y, reindeerSmall.transform.position.z);
         reindeerBig.transform.position = new Vector3(spawn.transform.position.x, spawn.transform.position.y, reindeerSmall.transform.position.z);
         transform.position = new Vector3(spawn.transform.position.x, spawn.transform.position.y, reindeerSmall.transform.position.z);
+        GetCurrentActiveDeer().GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
+        maxFallVelocity = 0;
     }
 
     public void StartBlowing(float windHorizontalVelocity, float windVerticalForce)
@@ -520,6 +682,20 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         reindeerSmall.GetComponent<ReindeerSmall>().WindOut();
         reindeerGhost.GetComponent<ReindeerGhost>().WindOut();
         reindeerBig.GetComponent<ReindeerBig>().WindOut();
+    }
+
+    public void PlayHunterTheme()
+    {
+        var audio = GetComponent<AudioSource>();
+        audio.clip = hunterTheme;
+        audio.Play();
+    }
+
+    public void PlayMainTheme()
+    {
+        var audio = GetComponent<AudioSource>();
+        audio.clip = mainTheme;
+        audio.Play();
     }
 
     /*public void OnTriggerExit2D(Collider2D collision)

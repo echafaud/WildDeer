@@ -21,6 +21,14 @@ public class Bush : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.E) && isTriggered)
         {
+            if (DeerUnity.VolumeRatio == 0)
+            {
+                audio.volume = 0;
+            }
+            else
+            {
+                audio.volume = 1;
+            }
             audio.PlayOneShot(bushInSound);
             isTriggered = false;
             deerUnity.GetComponent<DeerUnity>().UnBushed(gameObject);
@@ -29,6 +37,14 @@ public class Bush : MonoBehaviour
         else if (Input.GetKeyDown(KeyCode.E) && !isTriggered && DeerUnity.CurrentActive == 1
             && GetComponent<PolygonCollider2D>().IsTouching(deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().GetComponent<BoxCollider2D>()))
         {
+            if (DeerUnity.VolumeRatio == 0)
+            {
+                audio.volume = 0;
+            }
+            else
+            {
+                audio.volume = 1;
+            }
             audio.PlayOneShot(bushInSound);
             isTriggered = true;
             deerUnity.GetComponent<DeerUnity>().Bushed(gameObject);

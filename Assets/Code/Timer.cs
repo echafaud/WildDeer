@@ -52,6 +52,7 @@ public class Timer : MonoBehaviour
     {
         totalTime = 0;
         time = 0;
+        isTicked = false;
     }
 
     public bool IsTicked()

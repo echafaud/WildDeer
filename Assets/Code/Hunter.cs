@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -43,6 +44,7 @@ public class Hunter : MonoBehaviour
     private bool isStayAtPoint = false;
     public bool isEnabled;
     public AudioClip shootSound;
+    private HunterMode previousHunterMode = HunterMode.Searching;
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -69,7 +71,12 @@ public class Hunter : MonoBehaviour
         CheckIsStucked();
         MakeAction();
         FlipPlayer();
-
+        
+        if(previousHunterMode == HunterMode.Searching && mode == HunterMode.Chasing)
+        {
+            deerUnity.GetComponent<DeerUnity>().PlayHunterTheme();
+        }
+        previousHunterMode = mode;
         isGrounded = transform.Find("Ground").GetComponent<BoxCollider2D>().IsTouching(tilemap1.GetComponent<CompositeCollider2D>());
     }
 
@@ -108,11 +115,10 @@ public class Hunter : MonoBehaviour
     {
         if (mode == HunterMode.Searching)
         {
-            var delta = transform.position.x - searchingCentre.transform.position.x;
+            var deltaX = transform.position.x - searchingCentre.transform.position.x;
 
             //GameObject.Find("Info").GetComponent<Text>().text = (delta).ToString();
-
-            if (delta > 15)
+            if (deltaX > 15)
             {
                 if (standingTime == 0 && !isAlreadyStanded)
                 {
@@ -125,9 +131,9 @@ public class Hunter : MonoBehaviour
                     GoLeft();
                     standingTime = 0;
                 }
-                
+
             }
-            else if (delta < -15)
+            else if (deltaX < -15)
             {
                 if (standingTime == 0 && !isAlreadyStanded)
                 {
@@ -140,14 +146,17 @@ public class Hunter : MonoBehaviour
                     GoRight();
                     standingTime = 0;
                 }
+
             }
             else if (isAlreadyStanded)
             {
                 isAlreadyStanded = false;
             }
 
-            delta = deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().transform.position.x - transform.position.x;
-            if (delta > 15 || delta < -15)
+
+            deltaX = deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().transform.position.x - transform.position.x;
+            var deltaY = Math.Abs(deerUnity.GetComponent<DeerUnity>().GetCurrentActiveDeer().transform.position.y - transform.position.y);
+            if (deltaX > 15 || deltaX < -15)
             {
                 Run();
             }
@@ -155,9 +164,13 @@ public class Hunter : MonoBehaviour
             {
                 StopRunning();
             }
-            if (delta > -5 && delta < 5 && !deerUnity.GetComponent<DeerUnity>().isBushed)
+            if (deltaY < 10)
             {
-                mode = HunterMode.Chasing;
+                if (deltaX > -5 && deltaX < 5 && !deerUnity.GetComponent<DeerUnity>().isBushed)
+                {
+                    mode = HunterMode.Chasing;
+                    
+                }
             }
         }
         else if (mode == HunterMode.Chasing)
@@ -358,6 +371,14 @@ public class Hunter : MonoBehaviour
     private void Shoot()
     {
         var audio = GetComponent<AudioSource>();
+        if (DeerUnity.VolumeRatio == 0)
+        {
+            audio.volume = 0;
+        }
+        else
+        {
+            audio.volume = 0.1f;
+        }
         audio.PlayOneShot(shootSound);
         var newBullet = GameObject.Instantiate(GameObject.Find("HunterKit1").transform.Find("Bullet").gameObject, transform.position, transform.rotation);
         newBullet.GetComponent<Bullet>().GoToDeer();
@@ -385,5 +406,10 @@ public class Hunter : MonoBehaviour
     public void WindOut()
     {
         isInWind = false;
+    }
+
+    public void DisableHunter()
+    {
+        deerUnity.GetComponent<DeerUnity>().PlayMainTheme();
     }
 }
