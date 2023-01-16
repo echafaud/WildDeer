@@ -14,6 +14,7 @@ public class Hints : MonoBehaviour
     private Timer timer;
     private GameObject parent;
     private GameObject back;
+    private bool isRead;
     // Start is called before the first frame update
     void Start()
     {
@@ -55,8 +56,6 @@ public class Hints : MonoBehaviour
             {"HintOnMountain", "Нужно тщательно обыскать территорию горы. \nЯ чувствую новые запахи!" } };
         
         timer.SetPeriodForTick(5f);
-        //timer.StartTimer();
-        // тут проблема, объясню в дс
     }
 
     private void OnTriggerStay2D(Collider2D collision)
@@ -69,7 +68,19 @@ public class Hints : MonoBehaviour
         if (collision.tag == "Player")
         {
             text.GetComponent<Text>().text = textDict[gameObject.name];
-
+            //if (gameObject.name.Equals("ExitFromTheFirstShelter"))
+            //{
+            //    GameObject.Find("DeerUnity").GetComponent<DeerUnity>().SetTask(1);
+            //}
+            if (gameObject.name.Equals("Smells") && !isRead)
+            {
+                GameObject.Find("DeerUnity").GetComponent<DeerUnity>().SetTask(1);
+                isRead = true;
+            }
+            //if (gameObject.name.Equals("DeerSpirit"))
+            //{
+            //    GameObject.Find("DeerUnity").GetComponent<DeerUnity>().SetTask(1);
+            //}
             parent.GetComponent<Text>().text = textDict[gameObject.name];
             back.GetComponent<Image>().color = new Color(1, 1, 1, 1);
 

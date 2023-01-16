@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвечающий за переключение между ними. ≈го координата "x" всегда совпадает с координатой "x" у текущего олен€
 {// он €вл€етс€ просто св€зующим звеном, его не видно на камере и у него нет физики
@@ -23,6 +24,9 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     public bool isOnMovePlatform = false;
     public GameObject ghostCheckpoint;
     public static bool isCameraTiedGhost;
+    public bool isRunning;
+    private float previousX;
+    private bool isDead = false;
 
     public bool isFirstDeerAvailable;
     public bool isSecondDeerAvailable;
@@ -82,9 +86,87 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     public Sprite bigSecondAbil;
     public Sprite bigSecondAbilActive;
 
+    public GameObject TaskMenuParent;
+    public GameObject TaskMenu;
+    private HashSet<int> indexOfCurrentTasks = new HashSet<int>();
+    private string[] Tasks = new string[] { "«адани€\n",
+        "—обрать все следы (0/4)\n",
+        "ѕробратьс€ мимо охотника\n",
+        "”бежать от охотника\n",
+        "—ломать проход пулей охотника\n",
+        "ѕереключитьс€ за духа и преодолеть пропасть\n",
+        "»спользу€ способность духа \"материализаци€\" пройти дальше\n",
+        "»спользу€ способность духа \"парение\" спуститьс€ вниз\n"};
+    public GameObject Head;
+
+    private float defaultSize;
+    public GameObject completeWindow;
+
+    public GameObject backgroundChecker;
+
+    public GameObject smokeFront1;
+    public GameObject smokeFront2;
+    public GameObject smokeFront3;
+    private GameObject[] smokesFront;
+
+    public GameObject smokeMid1;
+    public GameObject smokeMid2;
+    public GameObject smokeMid3;
+    private GameObject[] smokesMid;
+
+    public GameObject smokeBack1;
+    public GameObject smokeBack2;
+    public GameObject smokeBack3;
+    private GameObject[] smokesBack;
+
+    public GameObject midFront1;
+    public GameObject midFront2;
+    public GameObject midFront3;
+    private GameObject[] midesFront;
+
+    public GameObject midMid1;
+    public GameObject midMid2;
+    public GameObject midMid3;
+    private GameObject[] midesMid;
+
+    public GameObject midBack1;
+    public GameObject midBack2;
+    public GameObject midBack3;
+    private GameObject[] midesBack;
+
+    public GameObject back1;
+    public GameObject back2;
+    public GameObject back3;
+    private GameObject[] backs;
+
+    private float xDelSmokeFront;
+    private float xDelSmokeMid;
+    private float xDelSmokeBack;
+    private float xDelMidFront;
+    private float xDelMidMid;
+    private float xDelMidBack;
+    private float xDelBack;
+
+    public GameObject backgroundOfTimer;
+    public GameObject textTimer;
+    private bool isGhostOn;
+    private float time;
+    private float lastTime;
+    public float ghostActiveTime;
+    public float ghostInactiveTime;
+    private bool isCanSwitchOnGhost;
+
     // Start is called before the first frame update
     void Start()
     {
+        lastTime = ghostActiveTime;
+        isCanSwitchOnGhost = true;
+        textTimer.GetComponent<Text>().text = "";
+        backgroundOfTimer.GetComponent<Image>().fillAmount = 0;
+        //defaultSize = TaskMenuParent.GetComponent<RectTransform>().sizeDelta.y;
+        defaultSize = 65;
+        //TaskMenuParent.transform.Find("TextBackground").gameObject.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        //TaskMenu.GetComponent<Text>().color = new Color(0, 0, 0, 0);
         reindeerGhost = GameObject.Find("ReindeerGhost");
         reindeerSmall = GameObject.Find("ReindeerSmall");//тут находим трех оленей на сцене
         reindeerBig = GameObject.Find("ReindeerBig");
@@ -119,7 +201,6 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         //isThirdDeerAvailable = true;
 
         //isActivateCooling = true;
-        ActivateCooling();
         tileMapCollider1 = GameObject.Find("Tilemap1").GetComponent<CompositeCollider2D>();
         tileMapCollider2 = GameObject.Find("Tilemap2").GetComponent<CompositeCollider2D>();
 
@@ -131,6 +212,29 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         {
             GameObject.Find(SaveManager.LastCheckPointName).GetComponent<CheckPoint>().isReached = true;
         }
+
+        previousX = transform.position.x;
+        smokesFront = new GameObject[] { smokeFront1, smokeFront2, smokeFront3 };
+        smokesMid = new GameObject[] { smokeMid1, smokeMid2, smokeMid3 };
+        smokesBack = new GameObject[] { smokeBack1, smokeBack2, smokeBack3 };
+
+        midesFront = new GameObject[] { midFront1, midFront2, midFront3 };
+        midesMid = new GameObject[] { midMid1, midMid2, midMid3 };
+        midesBack = new GameObject[] { midBack1, midBack2, midBack3 };
+
+        backs = new GameObject[] { back1, back2, back3 };
+
+        xDelSmokeFront = smokesFront[1].transform.localPosition.x - smokesFront[2].transform.localPosition.x;
+        xDelSmokeMid = smokesMid[1].transform.localPosition.x - smokesMid[2].transform.localPosition.x;
+        xDelSmokeBack = smokesBack[1].transform.localPosition.x - smokesBack[2].transform.localPosition.x;
+        xDelMidFront = midesFront[1].transform.localPosition.x - midesFront[2].transform.localPosition.x;
+        xDelMidMid = midesMid[1].transform.localPosition.x - midesMid[2].transform.localPosition.x;
+        xDelMidBack = midesBack[1].transform.localPosition.x - midesBack[2].transform.localPosition.x;
+        xDelBack = backs[1].transform.localPosition.x - backs[2].transform.localPosition.x;
+
+        TaskMenuParent.transform.Find("TextBackground").GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        Head.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        TaskMenu.GetComponent<Text>().text = "";
     }
 
     // Update is called once per frame
@@ -163,7 +267,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         {
             OnE();
         }
-        if (Input.GetKeyDown(KeyCode.LeftAlt))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             OnAlt();
         }
@@ -171,10 +275,249 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         {
             OffE();
         }
-        if (Input.GetKeyUp(KeyCode.LeftAlt))
+        if (Input.GetKeyUp(KeyCode.X))
         {
             OffAlt();
         }
+
+        if (Math.Abs(transform.position.x - previousX) < 5)
+        {
+            smokesFront[0].transform.parent.gameObject.transform.localPosition -= new Vector3(2 * (transform.position.x - previousX), 0, 0);
+            smokesMid[0].transform.parent.gameObject.transform.localPosition -= new Vector3(1.5f * (transform.position.x - previousX), 0, 0);
+            smokesBack[0].transform.parent.gameObject.transform.localPosition -= new Vector3(1 * (transform.position.x - previousX), 0, 0);
+
+            midesFront[0].transform.parent.gameObject.transform.localPosition -= new Vector3(0.5f * (transform.position.x - previousX), 0, 0);
+            midesMid[0].transform.parent.gameObject.transform.localPosition -= new Vector3(0.33f * (transform.position.x - previousX), 0, 0);
+            midesBack[0].transform.parent.gameObject.transform.localPosition -= new Vector3(0.25f * (transform.position.x - previousX), 0, 0);
+
+            backs[0].transform.parent.gameObject.transform.localPosition -= new Vector3(0.1f * (transform.position.x - previousX), 0, 0);
+        }
+
+
+        previousX = transform.position.x;
+
+        /////////////////////////////
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesFront[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesFront[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesFront[2].transform.localPosition += new Vector3(3 * xDelSmokeFront, 0, 0);
+            var newSmokes = new GameObject[] { smokesFront[2], smokesFront[0], smokesFront[1] };
+            smokesFront = newSmokes;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesFront[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesFront[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesFront[0].transform.localPosition += new Vector3(-3 * xDelSmokeFront, 0, 0);
+            var newSmokes = new GameObject[] { smokesFront[1], smokesFront[2], smokesFront[0] };
+            smokesFront = newSmokes;
+        }
+        ////////////////////////////////////////
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesMid[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesMid[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesMid[2].transform.localPosition += new Vector3(3 * xDelSmokeMid, 0, 0);
+            var newSmokes = new GameObject[] { smokesMid[2], smokesMid[0], smokesMid[1] };
+            smokesMid = newSmokes;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesMid[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesMid[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesMid[0].transform.localPosition += new Vector3(-3 * xDelSmokeMid, 0, 0);
+            var newSmokes = new GameObject[] { smokesMid[1], smokesMid[2], smokesMid[0] };
+            smokesMid = newSmokes;
+        }
+        //////////////////////////////////////
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesBack[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesBack[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesBack[2].transform.localPosition += new Vector3(3 * xDelSmokeBack, 0, 0);
+            var newSmokes = new GameObject[] { smokesBack[2], smokesBack[0], smokesBack[1] };
+            smokesBack = newSmokes;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesBack[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(smokesBack[1].GetComponent<BoxCollider2D>()))
+        {
+            smokesBack[0].transform.localPosition += new Vector3(-3 * xDelSmokeBack, 0, 0);
+            var newSmokes = new GameObject[] { smokesBack[1], smokesBack[2], smokesBack[0] };
+            smokesBack = newSmokes;
+        }
+        ////////////////////////////////////
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesFront[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesFront[1].GetComponent<BoxCollider2D>()))
+        {
+            midesFront[2].transform.localPosition += new Vector3(3 * xDelMidFront, 0, 0);
+            var newMides = new GameObject[] { midesFront[2], midesFront[0], midesFront[1] };
+            midesFront = newMides;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesFront[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesFront[1].GetComponent<BoxCollider2D>()))
+        {
+            midesFront[0].transform.localPosition += new Vector3(-3 * xDelMidFront, 0, 0);
+            var newMides = new GameObject[] { midesFront[1], midesFront[2], midesFront[0] };
+            midesFront = newMides;
+        }
+        ////////////////////////////////////////
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesMid[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesMid[1].GetComponent<BoxCollider2D>()))
+        {
+            midesMid[2].transform.localPosition += new Vector3(3 * xDelMidMid, 0, 0);
+            var newMides = new GameObject[] { midesMid[2], midesMid[0], midesMid[1] };
+            midesMid = newMides;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesMid[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesMid[1].GetComponent<BoxCollider2D>()))
+        {
+            midesMid[0].transform.localPosition += new Vector3(-3 * xDelMidMid, 0, 0);
+            var newMides = new GameObject[] { midesMid[1], midesMid[2], midesMid[0] };
+            midesMid = newMides;
+        }
+        //////////////////////////////////////
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesBack[0].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesBack[1].GetComponent<BoxCollider2D>()))
+        {
+            midesBack[2].transform.localPosition += new Vector3(3 * xDelMidBack, 0, 0);
+            var newMides = new GameObject[] { midesBack[2], midesBack[0], midesBack[1] };
+            midesBack = newMides;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesBack[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(midesBack[1].GetComponent<BoxCollider2D>()))
+        {
+            midesBack[0].transform.localPosition += new Vector3(-3 * xDelMidBack, 0, 0);
+            var newMides = new GameObject[] { midesBack[1], midesBack[2], midesBack[0] };
+            midesBack = newMides;
+        }
+        ////////////////////////////////////
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(backs[0].GetComponent<BoxCollider2D>())
+           && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(backs[1].GetComponent<BoxCollider2D>()))
+        {
+            backs[2].transform.localPosition += new Vector3(3 * xDelBack, 0, 0);
+            var newBacks = new GameObject[] { backs[2], backs[0], backs[1] };
+            backs = newBacks;
+        }
+
+        if (backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(backs[2].GetComponent<BoxCollider2D>())
+            && !backgroundChecker.GetComponent<BoxCollider2D>().IsTouching(backs[1].GetComponent<BoxCollider2D>()))
+        {
+            backs[0].transform.localPosition += new Vector3(-3 * xDelBack, 0, 0);
+            var newBacks = new GameObject[] { backs[1], backs[2], backs[0] };
+            backs = newBacks;
+        }
+        ////////////////////////////////
+        UpdateTimer();
+    }
+
+    private void UpdateTimer()
+    {
+        if (isGhostOn)
+        {
+            textTimer.GetComponent<Text>().text = string.Format("{0:0.#}", lastTime);
+            lastTime -= Time.deltaTime;
+            if (lastTime < 0)
+            {
+                isGhostOn = false;
+                SwitchOnFirst();
+                lastTime = ghostInactiveTime;
+                textTimer.GetComponent<Text>().text = "";
+                isCanSwitchOnGhost = false;
+                backgroundOfTimer.GetComponent<Image>().fillAmount = 1;
+            }
+        }
+        if (!isGhostOn && !isCanSwitchOnGhost)
+        {
+            textTimer.GetComponent<Text>().text = string.Format("{0:0.#}", lastTime);
+            lastTime -= Time.deltaTime;
+            backgroundOfTimer.GetComponent<Image>().fillAmount = lastTime / ghostInactiveTime;
+            if (lastTime < 0)
+            {
+                backgroundOfTimer.GetComponent<Image>().fillAmount = 0;
+                lastTime = ghostActiveTime;
+                textTimer.GetComponent<Text>().text = "";
+                isCanSwitchOnGhost = true;
+            }
+        }
+    }
+    public void SetTask(int numberOfTask)
+    {
+        if (indexOfCurrentTasks.Count == 0)
+        {
+            TaskMenuParent.transform.Find("TextBackground").GetComponent<Image>().color = new Color(0, 0, 0, 0.8f);
+            Head.GetComponent<Image>().color = new Color(1, 1, 1, 1);
+        }
+        if (!indexOfCurrentTasks.Contains(numberOfTask))
+        {
+            indexOfCurrentTasks.Add(numberOfTask);
+        }
+        else
+        {
+            var task = Tasks[numberOfTask].Split("/");
+            if (task.Length == 1)
+            {
+                TaskComplete(numberOfTask);
+            }
+            else
+            {
+                var cur = int.Parse(task[0].Substring(task[0].Length - 1)) + 1;
+                var need = int.Parse(task[1].Substring(0, 1));
+                if (cur == need)
+                {
+                    TaskComplete(numberOfTask);
+                }
+                else
+                {
+                    var newTask = "";
+                    newTask += task[0].Substring(0, task[0].Length - 1) + cur.ToString() + "/" + task[1];
+                    Tasks[numberOfTask] = newTask;
+                }
+            }
+        }
+        //TaskMenuParent.transform.Find("TextBackground").gameObject.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        //TaskMenu.GetComponent<Text>().color = new Color(0, 0, 0, 0);
+        var s = Tasks[0];
+        foreach (var index in indexOfCurrentTasks)
+        {
+            s += Tasks[index];
+        }
+        s = s.Remove(s.Length - 1);
+        if (s.Equals(Tasks[0].Remove(Tasks[0].Length - 1)))
+        {
+            TaskMenuParent.transform.Find("TextBackground").gameObject.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+            Head.GetComponent<Image>().color = new Color(0, 0, 0, 0);
+            TaskMenu.GetComponent<Text>().color = new Color(0, 0, 0, 0);
+        }
+        else
+        {
+            TaskMenuParent.transform.Find("TextBackground").gameObject.GetComponent<Image>().color = new Color(0, 0, 0, 0.8f);
+            Head.GetComponent<Image>().color = new Color(1, 1, 1, 1);
+            TaskMenu.GetComponent<Text>().color = new Color(1, 1, 1, 1);
+        }
+        TaskMenuParent.GetComponent<Text>().text = s;
+        TaskMenu.GetComponent<Text>().text = s;
+        Invoke("SetNewSize", 0.01f);
+    }
+
+    private void TaskComplete(int numberOfTask)
+    {
+        Tasks[numberOfTask] = "";
+        completeWindow.GetComponent<CompleteWindow>().isMissionCompleted = true;
+    }
+    private void SetNewSize()
+    {
+        var nextDefaultSize = TaskMenuParent.GetComponent<RectTransform>().sizeDelta.y;
+        TaskMenuParent.transform.localPosition -= new Vector3(0, (nextDefaultSize - defaultSize) / 2, 0);
+        TaskMenu.transform.localPosition = TaskMenuParent.transform.localPosition;
+        defaultSize = nextDefaultSize;
+        //TaskMenuParent.transform.Find("TextBackground").gameObject.GetComponent<Image>().color = new Color(1, 1, 1, 1);
+        //TaskMenu.GetComponent<Text>().color = new Color(1, 1, 1, 1);
     }
 
     private void OffAlt()
@@ -344,8 +687,9 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
 
     public void Respawn()
     {
+
         var allHunterControlPoints = GameObject.FindGameObjectsWithTag("HunterPoint");
-        foreach(var point in allHunterControlPoints)
+        foreach (var point in allHunterControlPoints)
         {
             point.GetComponent<HunterControlPoint>().isAlreadyWorked = false;
         }
@@ -372,16 +716,17 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         SwitchOnFirst();
         GetCurrentActiveDeer().GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
         maxFallVelocity = 0;
+
     }
 
     private void StaminaKeys()
     {
-        if ((Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.LeftShift)) 
-            || (!Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.LeftShift)))
+        if ((Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.LeftShift) && isRunning)
+            || (!Input.GetKey(KeyCode.A) && Input.GetKey(KeyCode.D) && Input.GetKey(KeyCode.LeftShift) && isRunning))
         {
             currentStamina -= Time.deltaTime * 20f;
         }
-        else if(currentStamina < maxStamina)
+        else if (currentStamina < maxStamina)
         {
             currentStamina += Time.deltaTime * 10f;
         }
@@ -403,8 +748,6 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         }
         if (isCameraTiedGhost)
         {
-            if (GameObject.Find("Main Camera").GetComponent<Camera>().orthographicSize < 12)
-                GameObject.Find("Main Camera").GetComponent<Camera>().orthographicSize += 0.1f;
             transform.position = new Vector3(ghostCheckpoint.transform.position.x, ghostCheckpoint.transform.position.y);
         }
         else if (GameObject.Find("Main Camera").GetComponent<Camera>().orthographicSize > 4)
@@ -416,21 +759,35 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
     {
         if (isFirstDeerAvailable && Input.GetKeyDown(KeyCode.Alpha1) && CurrentActive != 1 && isCanSwitch)//в зависимости от того, на какую цифру нажали, активируютс€ и дизактивируютс€ нужные олени
         {
+            if (CurrentActive == 2)
+            {
+                isCanSwitchOnGhost = false;
+                lastTime = ghostInactiveTime;
+                isGhostOn = false;
+            }
             SwitchOnFirst();
         }
-        if (isSecondDeerAvailable && Input.GetKeyDown(KeyCode.Alpha2) && CurrentActive != 2 && isCanSwitch)
+        if (isSecondDeerAvailable && Input.GetKeyDown(KeyCode.Alpha2) && CurrentActive != 2 && isCanSwitch && isCanSwitchOnGhost)
         {
             SwitchOnSecond();
+            reindeerGhost.GetComponent<ReindeerGhost>().isCanMater = true;
+            isGhostOn = true;
         }
         if (isThirdDeerAvailable && Input.GetKeyDown(KeyCode.Alpha3) && CurrentActive != 3 && isCanSwitch)
         {
+            if (CurrentActive == 2)
+            {
+                isCanSwitchOnGhost = false;
+                lastTime = ghostInactiveTime;
+                isGhostOn = false;
+            }
             SwitchOnThird();
         }
     }
 
     public void SwitchOnFirst()
     {
-        
+
         if (isOnMovePlatform)
         {
             var collisionTransform = GetCurrentActiveDeer().transform.parent;
@@ -485,7 +842,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
 
     public void SwitchOnSecond()
     {
-        
+
         if (isOnMovePlatform)
         {
             var collisionTransform = GetCurrentActiveDeer().transform.parent;
@@ -538,7 +895,7 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
 
     public void SwitchOnThird()
     {
-        
+
         if (isOnMovePlatform)
         {
             var collisionTransform = GetCurrentActiveDeer().transform.parent;
@@ -619,11 +976,11 @@ public class DeerUnity : MonoBehaviour //класс, объедин€ющий всех оленей и отвеч
         IsGrounded = nextIsGrounded;
     }
 
-    
+
 
     public void Trapped()
     {
-        
+
         switch (CurrentActive)
         {
             case 1:

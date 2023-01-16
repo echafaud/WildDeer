@@ -25,6 +25,15 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
     private int previousDirection = 1;
     private List<GameObject> allAnotherPlatforms = new List<GameObject>();
     public GameObject currendGhostPlatform;
+    private bool isFlying;
+    public bool isCanMater = true;
+
+    //public RuntimeAnimatorController stayAnimation;
+    //public RuntimeAnimatorController walkAnimation;
+
+
+    //private bool isStayAni = true;
+    //private bool isWalkAni = false;
 
     //public bool isGrounded = true;
     void Start()
@@ -56,6 +65,19 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
         CheckIsStucked();
         MakeAction();
         FlipPlayer();
+
+        /*if (isStayAni && horizontalForceRatio != 0 && CurrentHorizontalVelocity != 0 && DeerUnity.IsGrounded)
+        {
+            isStayAni = false;
+            isWalkAni = true;
+            GetComponent<Animator>().runtimeAnimatorController = walkAnimation;
+        }
+        else if (isWalkAni && (horizontalForceRatio == 0 || CurrentHorizontalVelocity == 0 || !DeerUnity.IsGrounded))
+        {
+            isStayAni = true;
+            isWalkAni = false;
+            GetComponent<Animator>().runtimeAnimatorController = stayAnimation;
+        }*/
     }
 
     private void CheckIsStucked()
@@ -91,18 +113,30 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
 
     public void MakeAction()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && DeerUnity.IsGrounded)//если нажали пробел и олень по вертикали не движется, "пнуть" его вверх
+        if (Input.GetKeyDown(KeyCode.Space) && DeerUnity.IsGrounded)
         {
             rigidbody.AddForce(new Vector2(0, 45));
         }
-        if (Input.GetKeyDown(KeyCode.LeftAlt) && !DeerUnity.IsGrounded && rigidbody.velocity.y <= 0)
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            isFlying = true;
+        }
+        if (isFlying && rigidbody.velocity.y <= 0)
         {
             rigidbody.gravityScale = 0.1f;
-            rigidbody.velocity = new Vector2(rigidbody.velocity.x, -1);
         }
-        if (Input.GetKeyUp(KeyCode.LeftAlt))//если нажали пробел и олень по вертикали не движется, "пнуть" его вверх
+        if (isFlying && rigidbody.velocity.y > 0)
         {
             rigidbody.gravityScale = 1f;
+        }
+        if (!isFlying)
+        {
+            rigidbody.gravityScale = 1f;
+        }
+        if (Input.GetKeyUp(KeyCode.X))
+        {
+            rigidbody.gravityScale = 1f;
+            isFlying = false;
         }
 
         if (Input.GetKeyDown(KeyCode.D))//если нажали вправо, прибавить горизонтальную скорость вправо
@@ -120,24 +154,27 @@ public class ReindeerGhost : MonoBehaviour //Призрачный олень.
             CurrentHorizontalVelocity += -4;
             //horizontalForceRatio = 0;
         }
-        if (Input.GetKeyDown(KeyCode.E) && currendGhostPlatform != null)//если нажали влево, прибавить горизонтальную скорость влево
+        if (Input.GetKeyDown(KeyCode.E) && currendGhostPlatform != null && isCanMater)//если нажали влево, прибавить горизонтальную скорость влево
         {
             currendGhostPlatform.GetComponent<Materialization>().makeMaterialisation();
+            isCanMater = false;
         }
         if (Input.GetKeyUp(KeyCode.A))//если отпустили влево, прибавить горизонтальную скорость вправо
         {
             CurrentHorizontalVelocity += 4;
             //horizontalForceRatio = 0;
         }
-        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0)
+        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0 && DeerUnity.IsGrounded)
         {
             shiftRatio = 1.5f;
             isRunning = true;
+            deerUnity.GetComponent<DeerUnity>().isRunning = true;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift) || !isRunning || (isRunning && deerUnity.GetComponent<DeerUnity>().currentStamina <= 0))
         {
             shiftRatio = 1;
             isRunning = false;
+            deerUnity.GetComponent<DeerUnity>().isRunning = false;
         }
         if (DeerUnity.IsGrounded)
         {

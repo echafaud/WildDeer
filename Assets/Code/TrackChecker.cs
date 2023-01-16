@@ -70,6 +70,7 @@ public class TrackChecker : MonoBehaviour
             if (!textDict[collision.gameObject.name].Item2)
             {
                 deerUnity.GetComponent<DeerUnity>().countOfFoundTracks += 1;
+                deerUnity.GetComponent<DeerUnity>().SetTask(1);
                 textDict[collision.gameObject.name] = Tuple.Create(textDict[collision.gameObject.name].Item1, true);
             }
             text.GetComponent<Text>().text = textDict[collision.gameObject.name].Item1;

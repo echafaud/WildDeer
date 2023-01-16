@@ -21,7 +21,7 @@ public class GhostControlPoint : MonoBehaviour
         if (active == null)
         {
             active = GameObject.Find("ActivatedSectionMap");
-            active.SetActive(false);
+            Invoke("Disable", 3f);
         }
         
     }
@@ -41,6 +41,11 @@ public class GhostControlPoint : MonoBehaviour
             }
         }
         
+    }
+
+    private void Disable()
+    {
+        active.SetActive(false);
     }
 
     private void TurnOffCameraTiedGhost()

@@ -32,6 +32,13 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
     private GameObject trapTriggerLeft;
     private GameObject trapTriggerRight;
     public GameObject CurrentActiveTrapTrigger;
+
+    //public RuntimeAnimatorController stayAnimation;
+    //public RuntimeAnimatorController walkAnimation;
+
+
+    //private bool isStayAni = true;
+    //private bool isWalkAni = false;
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -67,6 +74,19 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
         CheckIsStucked();
         MakeAction();
         FlipPlayer();
+
+        /*if (isStayAni && horizontalForceRatio != 0 && CurrentHorizontalVelocity != 0 && DeerUnity.IsGrounded)
+        {
+            isStayAni = false;
+            isWalkAni = true;
+            GetComponent<Animator>().runtimeAnimatorController = walkAnimation;
+        }
+        else if (isWalkAni && (horizontalForceRatio == 0 || CurrentHorizontalVelocity == 0 || !DeerUnity.IsGrounded))
+        {
+            isStayAni = true;
+            isWalkAni = false;
+            GetComponent<Animator>().runtimeAnimatorController = stayAnimation;
+        }*/
     }
 
     private void CheckIsStucked()
@@ -141,15 +161,17 @@ public class ReindeerBig : MonoBehaviour //большой олень. ѕока полностью совпада
             CurrentHorizontalVelocity += 4;
             //horizontalForceRatio = 0;
         }
-        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0)
+        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0 && DeerUnity.IsGrounded)
         {
             shiftRatio = 2;
             isRunning = true;
+            deerUnity.GetComponent<DeerUnity>().isRunning = true;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift) || !isRunning || (isRunning && deerUnity.GetComponent<DeerUnity>().currentStamina <= 0))
         {
             shiftRatio = 1;
             isRunning = false;
+            deerUnity.GetComponent<DeerUnity>().isRunning = false;
         }
         var previousDirection = direction;
         if (CurrentHorizontalVelocity > 0)

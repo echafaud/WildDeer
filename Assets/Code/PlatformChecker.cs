@@ -74,7 +74,7 @@ public class PlatformChecker : MonoBehaviour
         queueOff.Dequeue().gameObject.SetActive(false);
         Invoke("TurnOnPlatform", 5f);
     }
-     void TurnOnPlatform()
+    void TurnOnPlatform()
     {
         queueOn.Dequeue().gameObject.SetActive(true);
     }

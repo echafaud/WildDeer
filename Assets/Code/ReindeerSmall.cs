@@ -43,6 +43,13 @@ public class ReindeerSmall : MonoBehaviour
     //public bool isNeedToUpdatePlatformsList = false;
     public bool isInShadow { get; private set; }
 
+    public RuntimeAnimatorController stayAnimation;
+    public RuntimeAnimatorController walkAnimation;
+
+
+    private bool isStayAni = true;
+    private bool isWalkAni = false;
+
     void Start()
     {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -62,6 +69,7 @@ public class ReindeerSmall : MonoBehaviour
 
         allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("CollapsingPlat"));
         allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("Platform"));
+        allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("MaterialisedPlatform"));
 
         rightWallChecker = transform.Find("RightWallChecker").gameObject;
         leftWallChecker = transform.Find("LeftWallChecker").gameObject;
@@ -88,6 +96,19 @@ public class ReindeerSmall : MonoBehaviour
         CheckIsStucked();
         MakeAction();
         FlipPlayer();
+
+        if (isStayAni && horizontalForceRatio != 0 && CurrentHorizontalVelocity != 0 && DeerUnity.IsGrounded)
+        {
+            isStayAni = false;
+            isWalkAni = true;
+            GetComponent<Animator>().runtimeAnimatorController = walkAnimation;
+        }
+        else if (isWalkAni && (horizontalForceRatio == 0 || CurrentHorizontalVelocity == 0 || !DeerUnity.IsGrounded))
+        {
+            isStayAni = true;
+            isWalkAni = false;
+            GetComponent<Animator>().runtimeAnimatorController = stayAnimation;
+        }
     }
 
     public void FlipPlayer()
@@ -161,13 +182,13 @@ public class ReindeerSmall : MonoBehaviour
     private bool isTouchingAnythingElse(GameObject e)
     {
 
-        /*if (isNeedToUpdatePlatformsList)
-        {
-            isNeedToUpdatePlatformsList = false;
-            allAnotherPlatforms.Clear();
-            allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("CollapsingPlat"));
-            allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("Platform"));
-        }*/
+        //if (isNeedToUpdatePlatformsList)
+        //{
+        //    isNeedToUpdatePlatformsList = false;
+        //    allAnotherPlatforms.Clear();
+        //    allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("CollapsingPlat"));
+        //    allAnotherPlatforms.AddRange(GameObject.FindGameObjectsWithTag("Platform"));
+        //}
         foreach(var obj in allAnotherPlatforms)
         {
             var vector = transform.position - obj.transform.position;
@@ -179,12 +200,11 @@ public class ReindeerSmall : MonoBehaviour
                 {
 
                 }
-                if (b == null)
+                else if (b == null)
                 {
 
                 }
-                
-                if (a.IsTouching(b))
+                else if (a.IsTouching(b))
                     return true;
             }
         }
@@ -232,25 +252,27 @@ public class ReindeerSmall : MonoBehaviour
             CurrentHorizontalVelocity += 4;
             //horizontalForceRatio = 0;
         }
-        if (Input.GetKeyDown(KeyCode.LeftAlt))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             isSmell = true;
             TurnOnScent(); // функция для нюха, пока тут только затемнение экрана на некоторое время
             //Invoke("TurnOffScent", 3f); // функция вызывающая другую функцию, через заданный промежуток времени
         }
-        if (Input.GetKeyUp(KeyCode.LeftAlt))
+        if (Input.GetKeyUp(KeyCode.X))
         {
             TurnOffScent();
         }
-        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0)
+        if ((Input.GetKeyDown(KeyCode.LeftShift) || isRunning) && deerUnity.GetComponent<DeerUnity>().currentStamina > 0 && DeerUnity.IsGrounded)
         {
             shiftRatio = 2;
             isRunning = true;
+            deerUnity.GetComponent<DeerUnity>().isRunning = true;
         }
         if (Input.GetKeyUp(KeyCode.LeftShift) || !isRunning || (isRunning && deerUnity.GetComponent<DeerUnity>().currentStamina <= 0))
         {
             shiftRatio = 1;
             isRunning = false;
+            deerUnity.GetComponent<DeerUnity>().isRunning = false;
         }
         if (Input.GetKeyDown(KeyCode.E) && currentLemmingArea != null)//если нажали влево, прибавить горизонтальную скорость влево
         {

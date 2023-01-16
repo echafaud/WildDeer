@@ -19,7 +19,7 @@ public class ChangerAbilities : MonoBehaviour
             gameObject.transform.Find("E").gameObject.GetComponent<SpriteRenderer>().color = Color.white;
             Invoke("TurnOffE", 0.3f);
         }
-        if (Input.GetKeyDown(KeyCode.LeftAlt))
+        if (Input.GetKeyDown(KeyCode.X))
         {
             gameObject.transform.Find("Alt").gameObject.GetComponent<SpriteRenderer>().color = Color.white;
             Invoke("TurnOffAlt", 3f);

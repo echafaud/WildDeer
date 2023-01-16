@@ -29,12 +29,12 @@ public class GrabObjects : MonoBehaviour
 
         if (hitInfo.collider != null && hitInfo.collider.gameObject.layer == layerIndex)
         {
-            if (Input.GetKeyDown(KeyCode.LeftAlt) && grabbedObject == null)
+            if (Input.GetKeyDown(KeyCode.X) && grabbedObject == null)
             {
                 grabbedObject = hitInfo.collider.gameObject;
                 grabbedObject.GetComponent<Rigidbody2D>().mass = 10;
             }
-            else if (Input.GetKeyUp(KeyCode.LeftAlt) && grabbedObject != null)
+            else if (Input.GetKeyUp(KeyCode.X) && grabbedObject != null)
             {
                 grabbedObject.GetComponent<Rigidbody2D>().mass = 1000;
                 grabbedObject = null;
@@ -42,12 +42,12 @@ public class GrabObjects : MonoBehaviour
         }
         else if (secondHitInfo.collider != null && secondHitInfo.collider.gameObject.layer == layerIndex)
         {
-            if (Input.GetKeyDown(KeyCode.LeftAlt) && grabbedObject == null)
+            if (Input.GetKeyDown(KeyCode.X) && grabbedObject == null)
             {
                 grabbedObject = secondHitInfo.collider.gameObject;
                 grabbedObject.GetComponent<Rigidbody2D>().mass = 10;
             }
-            else if (Input.GetKeyUp(KeyCode.LeftAlt) && grabbedObject != null)
+            else if (Input.GetKeyUp(KeyCode.X) && grabbedObject != null)
             {
                 grabbedObject.GetComponent<Rigidbody2D>().mass = 1000;
                 grabbedObject = null;
